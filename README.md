@@ -199,7 +199,7 @@ let score = try? storage.object(forKey: "score")
 let favoriteCharacter = try? storage.object(forKey: "my favorite city")
 
 // Check if an object exists
-let hasFavoriteCharacter = try? storage.existsObject(forKey: "my favorite city")
+let hasFavoriteCharacter = try? storage.objectExists(forKey: "my favorite city")
 
 // Remove an object in storage
 try? storage.removeObject(forKey: "my favorite city")
@@ -263,7 +263,7 @@ storage.async.object(forKey: "my favorite city") { result in
   }
 }
 
-storage.async.existsObject(forKey: "my favorite city") { result in
+storage.async.objectExists(forKey: "my favorite city") { result in
   if case .success(let exists) = result, exists {
     print("I have a favorite city")
   }
@@ -288,6 +288,45 @@ storage.async.removeExpiredObjects() { result in
 }
 ```
 
+#### Swift Concurrency
+
+```swift
+do {
+  try await storage.async.setObject("Oslo", forKey: "my favorite city")
+  print("saved successfully")
+} catch {
+  print(error)
+}
+
+do {
+  let city = try await storage.async.object(forKey: "my favorite city")
+  print("my favorite city is \(city)")
+} catch {
+  print(error)
+}
+
+do {
+  let exists = try await storage.async.objectExists(forKey: "my favorite city")
+  if exists {
+    print("I have a favorite city")
+  }
+} catch {}
+
+do {
+  try await storage.async.remoeAll()
+  print("removal completes")
+} catch {
+  print(error)
+}
+
+do {
+  try await storage.async.removeExpiredObjects()
+  print("removal completes")
+} catch {
+  print(error)
+}
+```
+
 ### Expiry date
 
 By default, all saved objects have the same expiry as the expiry you specify in `DiskConfig` or `MemoryConfig`. You can overwrite this for a specific object by specifying `expiry` for `setObject`
@@ -299,7 +338,7 @@ try? storage.setObject("This is a string", forKey: "string")
 // A given expiry date will be applied to the item
 try? storage.setObject(
   "This is a string",
-  forKey: "string"
+  forKey: "string",
   expiry: .date(Date().addingTimeInterval(2 * 3600))
 )
 
@@ -398,10 +437,11 @@ If you want to load image into `UIImageView` or `NSImageView`, then we also have
 ### Cocoapods
 
 **Cache** is available through [CocoaPods](http://cocoapods.org). To install
-it, simply add the following line to your Podfile:
+it or update it, use the following line to your Podfile:
 
 ```ruby
-pod 'Cache'
+pod 'Cache', :git => 'https://github.com/hyperoslo/Cache.git'
+
 ```
 
 ### Carthage

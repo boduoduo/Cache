@@ -15,8 +15,8 @@ public final class Storage<Key: Hashable, Value> {
   ///   - diskConfig: Configuration for disk storage
   ///   - memoryConfig: Optional. Pass config if you want memory cache
   /// - Throws: Throw StorageError if any.
-  public convenience init(diskConfig: DiskConfig, memoryConfig: MemoryConfig, transformer: Transformer<Value>) throws {
-    let disk = try DiskStorage<Key, Value>(config: diskConfig, transformer: transformer)
+    public convenience init(diskConfig: DiskConfig, memoryConfig: MemoryConfig, fileManager: FileManager, transformer: Transformer<Value>) throws {
+    let disk = try DiskStorage<Key, Value>(config: diskConfig, fileManager: fileManager, transformer: transformer)
     let memory = MemoryStorage<Key, Value>(config: memoryConfig)
     let hybridStorage = HybridStorage(memoryStorage: memory, diskStorage: disk)
     self.init(hybridStorage: hybridStorage)
@@ -43,6 +43,10 @@ public final class Storage<Key: Hashable, Value> {
 }
 
 extension Storage: StorageAware {
+  public func removeInMemoryObject(forKey key: Key) throws {
+    try self.syncStorage.removeInMemoryObject(forKey: key)
+  }
+    
   public var allKeys: [Key] {
     self.syncStorage.allKeys
   }

@@ -39,14 +39,11 @@ final public class DiskStorage<Key: Hashable, Value> {
 
     try createDirectory()
 
-    // protection
-    #if os(iOS) || os(tvOS)
     if let protectionType = config.protectionType {
       try setDirectoryAttributes([
         FileAttributeKey.protectionKey: protectionType
       ])
     }
-    #endif
   }
 
   public required init(config: DiskConfig, fileManager: FileManager = FileManager.default, path: String, transformer: Transformer<Value>) {
@@ -145,6 +142,8 @@ extension DiskStorage: StorageAware {
     // Remove objects if storage size exceeds max size
     try removeResourceObjects(resourceObjects, totalSize: totalSize)
   }
+
+  public func removeInMemoryObject(forKey key: Key) throws { }
 }
 
 extension DiskStorage {

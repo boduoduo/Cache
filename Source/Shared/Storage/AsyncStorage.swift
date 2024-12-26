@@ -106,6 +106,7 @@ extension AsyncStorage {
     })
   }
 
+  @available(*, deprecated, renamed: "objectExists(forKey:completion:)")
   public func existsObject(
     forKey key: Key,
     completion: @escaping (Result<Bool, Error>) -> Void) {
@@ -115,6 +116,16 @@ extension AsyncStorage {
       }))
     })
   }
+
+  public func objectExists(
+    forKey key: Key,
+    completion: @escaping (Result<Bool, Error>) -> Void) {
+      object(forKey: key, completion: { (result: Result<Value, Error>) in
+        completion(result.map({ _ in
+          return true
+        }))
+      })
+    }
 }
 
 public extension AsyncStorage {
@@ -125,5 +136,67 @@ public extension AsyncStorage {
     )
 
     return storage
+  }
+}
+
+@available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+public extension AsyncStorage {
+  func entry(forKey key: Key) async throws -> Entry<Value> {
+    try await withCheckedThrowingContinuation { continuation in
+      entry(forKey: key) {
+        continuation.resume(with: $0)
+      }
+    }
+  }
+
+  func removeObject(forKey key: Key) async throws {
+    try await withCheckedThrowingContinuation { continuation in
+      removeObject(forKey: key) {
+        continuation.resume(with: $0)
+      }
+    }
+  }
+
+  func setObject(
+      _ object: Value,
+      forKey key: Key,
+      expiry: Expiry? = nil) async throws {
+    try await withCheckedThrowingContinuation { continuation in
+      setObject(object, forKey: key, expiry: expiry) {
+        continuation.resume(with: $0)
+      }
+    }
+  }
+
+  func removeAll() async throws {
+    try await withCheckedThrowingContinuation { continuation in
+      removeAll {
+        continuation.resume(with: $0)
+      }
+    }
+  }
+
+  func removeExpiredObjects() async throws {
+    try await withCheckedThrowingContinuation { continuation in
+      removeExpiredObjects {
+        continuation.resume(with: $0)
+      }
+    }
+  }
+
+  func object(forKey key: Key) async throws -> Value {
+    try await withCheckedThrowingContinuation { continuation in
+      object(forKey: key) {
+        continuation.resume(with: $0)
+      }
+    }
+  }
+
+  func objectExists(forKey key: Key) async throws -> Bool {
+    try await withCheckedThrowingContinuation { continuation in
+      objectExists(forKey: key) {
+        continuation.resume(with: $0)
+      }
+    }
   }
 }
